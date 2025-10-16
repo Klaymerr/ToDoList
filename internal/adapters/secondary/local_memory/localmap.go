@@ -6,12 +6,12 @@ import (
 )
 
 type LocalMap struct {
-	mp map[int]entity.Task
+	mp map[int]*entity.Task
 }
 
 func NewLocalMap() *LocalMap {
 	return &LocalMap{
-		mp: make(map[int]entity.Task),
+		mp: make(map[int]*entity.Task),
 	}
 }
 
@@ -20,7 +20,7 @@ func (lm *LocalMap) CreateTask(task entity.Task) error {
 	if ok {
 		return errors.New("Already exists")
 	}
-	lm.mp[task.ID()] = task
+	lm.mp[task.ID()] = &task
 	return nil
 }
 
@@ -38,13 +38,13 @@ func (lm *LocalMap) GetTask(id int) (entity.Task, error) {
 	if !ok {
 		return entity.Task{}, errors.New("Not exists")
 	}
-	return val, nil
+	return *val, nil
 }
 
 func (lm *LocalMap) GetTasks() ([]entity.Task, error) {
 	ret := make([]entity.Task, 0, len(lm.mp))
 	for _, v := range lm.mp {
-		ret = append(ret, v)
+		ret = append(ret, *v)
 	}
 	return ret, nil
 }
