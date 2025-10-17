@@ -1,7 +1,7 @@
 package main
 
 import (
-	"ToDoList/internal/adapters/primary/console"
+	"ToDoList/internal/adapters/primary/http_adapter"
 	"ToDoList/internal/adapters/secondary/local_memory"
 	"ToDoList/internal/domain/service"
 )
@@ -9,6 +9,7 @@ import (
 func main() {
 	taskRepository := local_memory.NewLocalMap()
 	taskService := service.NewTaskService(taskRepository)
-	primaryAdapter := console.NewConsole(taskService)
+	//primaryAdapter := console.NewConsole(taskService)
+	primaryAdapter := http_adapter.NewRouter(taskService)
 	primaryAdapter.Start()
 }

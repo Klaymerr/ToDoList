@@ -1,25 +1,26 @@
 package http_adapter
 
 import (
-	"ToDoList/internal/domain/service"
+	"ToDoList/internal/ports/primary"
 	"github.com/labstack/echo"
-	"net/http"
 )
 
 type Router struct {
-	taskService service.TaskService
+	taskService primary.TaskService
 }
 
-func Newhttp(ts service.TaskService) *Router {
+func NewRouter(ts primary.TaskService) *Router {
 	return &Router{taskService: ts}
 }
 
 func (r *Router) Start() error {
 	e := echo.New()
 
-	e.GET("/", func(c echo.Context) error {
-		return c.JSON(http.StatusOK, map[string]interface{}{})
-	})
+	e.POST("/", r.AddTaskHandler)
+	e.GET("/", r.GetTasksHandler)
+	e.GET("/:id", r.GetTaskHandler)
+
+	e.Start(":8080")
 
 	return nil
 }

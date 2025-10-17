@@ -31,3 +31,11 @@ func (t *Task) String() string {
 func (t *Task) ID() uuid.UUID {
 	return t.id
 }
+
+func (t *Task) Text() valueobject.Text {
+	return t.text
+}
+
+func (t *Task) Completed() bool {
+	return t.completed
+}
