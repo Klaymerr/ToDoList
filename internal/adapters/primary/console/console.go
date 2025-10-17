@@ -4,18 +4,16 @@ import (
 	"ToDoList/internal/domain/valueobject"
 	"ToDoList/internal/ports/primary"
 	"fmt"
-	"strconv"
+	"github.com/google/uuid"
 )
 
 type Console struct {
 	taskService primary.TaskService
-	maxid       int
 }
 
 func NewConsole(taskService primary.TaskService) *Console {
 	return &Console{
 		taskService,
-		0,
 	}
 }
 
@@ -38,11 +36,10 @@ func (c *Console) Start() {
 				fmt.Println(err)
 				continue
 			}
-			err = c.taskService.CreateTask(c.maxid, *text)
+			err = c.taskService.CreateTask(*text)
 			if err != nil {
 				return
 			}
-			c.maxid++
 
 		case "Complete":
 			str := ""
@@ -50,7 +47,7 @@ func (c *Console) Start() {
 			if err != nil {
 				return
 			}
-			id, err := strconv.Atoi(str)
+			id, err := uuid.Parse(str)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -66,7 +63,7 @@ func (c *Console) Start() {
 			if err != nil {
 				return
 			}
-			id, err := strconv.Atoi(str)
+			id, err := uuid.Parse(str)
 			if err != nil {
 				fmt.Println(err)
 			}

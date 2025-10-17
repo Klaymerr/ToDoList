@@ -3,11 +3,12 @@ package primary
 import (
 	"ToDoList/internal/domain/entity"
 	"ToDoList/internal/domain/valueobject"
+	"github.com/google/uuid"
 )
 
 type TaskService interface {
-	CreateTask(id int, text valueobject.Text) error
-	CompleteTask(id int) error
-	GetTask(id int) (entity.Task, error)
+	CreateTask(text valueobject.Text) error
+	CompleteTask(id uuid.UUID) error
+	GetTask(id uuid.UUID) (entity.Task, error)
 	GetTasks() ([]entity.Task, error)
 }

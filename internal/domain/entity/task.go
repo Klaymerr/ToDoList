@@ -3,17 +3,18 @@ package entity
 import (
 	"ToDoList/internal/domain/valueobject"
 	"fmt"
+	"github.com/google/uuid"
 )
 
 type Task struct {
-	id        int
+	id        uuid.UUID
 	text      valueobject.Text
 	completed bool
 }
 
-func NewTask(id int, text valueobject.Text) *Task {
+func NewTask(text valueobject.Text) *Task {
 	return &Task{
-		id:        id,
+		id:        uuid.New(),
 		text:      text,
 		completed: false,
 	}
@@ -24,9 +25,9 @@ func (t *Task) Complete() {
 }
 
 func (t *Task) String() string {
-	return fmt.Sprintf("id: %d, text: %s, completed: %t", t.id, t.text, t.completed)
+	return fmt.Sprintf("id: %v, text: %s, completed: %t", t.id, t.text, t.completed)
 }
 
-func (t *Task) ID() int {
+func (t *Task) ID() uuid.UUID {
 	return t.id
 }

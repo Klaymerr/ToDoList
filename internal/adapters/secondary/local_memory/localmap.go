@@ -3,15 +3,16 @@ package local_memory
 import (
 	"ToDoList/internal/domain/entity"
 	"errors"
+	"github.com/google/uuid"
 )
 
 type LocalMap struct {
-	mp map[int]*entity.Task
+	mp map[uuid.UUID]*entity.Task
 }
 
 func NewLocalMap() *LocalMap {
 	return &LocalMap{
-		mp: make(map[int]*entity.Task),
+		mp: make(map[uuid.UUID]*entity.Task),
 	}
 }
 
@@ -24,7 +25,7 @@ func (lm *LocalMap) CreateTask(task entity.Task) error {
 	return nil
 }
 
-func (lm *LocalMap) CompleteTask(id int) error {
+func (lm *LocalMap) CompleteTask(id uuid.UUID) error {
 	val, ok := lm.mp[id]
 	if !ok {
 		return errors.New("Not exists")
@@ -33,7 +34,7 @@ func (lm *LocalMap) CompleteTask(id int) error {
 	return nil
 }
 
-func (lm *LocalMap) GetTask(id int) (entity.Task, error) {
+func (lm *LocalMap) GetTask(id uuid.UUID) (entity.Task, error) {
 	val, ok := lm.mp[id]
 	if !ok {
 		return entity.Task{}, errors.New("Not exists")

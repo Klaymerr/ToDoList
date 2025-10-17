@@ -4,6 +4,7 @@ import (
 	"ToDoList/internal/domain/entity"
 	"ToDoList/internal/domain/valueobject"
 	"ToDoList/internal/ports/secondary"
+	"github.com/google/uuid"
 )
 
 type TaskService struct {
@@ -16,8 +17,8 @@ func NewTaskService(taskRepo secondary.TaskRepository) *TaskService {
 	}
 }
 
-func (ts *TaskService) CreateTask(id int, text valueobject.Text) error {
-	task := entity.NewTask(id, text)
+func (ts *TaskService) CreateTask(text valueobject.Text) error {
+	task := entity.NewTask(text)
 	err := ts.TaskRepo.CreateTask(*task)
 	if err != nil {
 		return err
@@ -25,7 +26,7 @@ func (ts *TaskService) CreateTask(id int, text valueobject.Text) error {
 	return nil
 }
 
-func (ts *TaskService) CompleteTask(id int) error {
+func (ts *TaskService) CompleteTask(id uuid.UUID) error {
 	err := ts.TaskRepo.CompleteTask(id)
 	if err != nil {
 		return err
@@ -33,7 +34,7 @@ func (ts *TaskService) CompleteTask(id int) error {
 	return nil
 }
 
-func (ts *TaskService) GetTask(id int) (entity.Task, error) {
+func (ts *TaskService) GetTask(id uuid.UUID) (entity.Task, error) {
 	Task, err := ts.TaskRepo.GetTask(id)
 	if err != nil {
 		return entity.Task{}, err
