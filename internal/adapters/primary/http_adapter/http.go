@@ -19,6 +19,7 @@ func (r *Router) Start() error {
 	e.POST("/", r.AddTaskHandler)
 	e.GET("/", r.GetTasksHandler)
 	e.GET("/:id", r.GetTaskHandler)
+	e.PATCH("/complete/:id", r.CompleteTaskHandler)
 
 	e.Start(":8080")
 
