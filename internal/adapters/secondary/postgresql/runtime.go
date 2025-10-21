@@ -2,8 +2,31 @@
 
 package postgresql
 
+import (
+	"ToDoList/internal/adapters/secondary/postgresql/ent"
+	"ToDoList/internal/adapters/secondary/postgresql/task"
+
+	"github.com/google/uuid"
+
+	"entgo.io/ent"
+)
+
 // The init function reads all schema descriptors with runtime code
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	taskFields := ent.Task{}.Fields()
+	_ = taskFields
+	// taskDescText is the schema descriptor for text field.
+	taskDescText := taskFields[1].Descriptor()
+	// task.TextValidator is a validator for the "text" field. It is called by the builders before save.
+	task.TextValidator = taskDescText.Validators[0].(func(string) error)
+	// taskDescCompleted is the schema descriptor for completed field.
+	taskDescCompleted := taskFields[2].Descriptor()
+	// task.DefaultCompleted holds the default value on creation for the completed field.
+	task.DefaultCompleted = taskDescCompleted.Default.(bool)
+	// taskDescID is the schema descriptor for id field.
+	taskDescID := taskFields[0].Descriptor()
+	// task.DefaultID holds the default value on creation for the id field.
+	task.DefaultID = taskDescID.Default.(func() uuid.UUID)
 }

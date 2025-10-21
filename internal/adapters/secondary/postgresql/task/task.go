@@ -4,6 +4,7 @@ package task
 
 import (
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 const (
@@ -11,6 +12,10 @@ const (
 	Label = "task"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
+	// FieldText holds the string denoting the text field in the database.
+	FieldText = "text"
+	// FieldCompleted holds the string denoting the completed field in the database.
+	FieldCompleted = "completed"
 	// Table holds the table name of the task in the database.
 	Table = "tasks"
 )
@@ -18,6 +23,8 @@ const (
 // Columns holds all SQL columns for task fields.
 var Columns = []string{
 	FieldID,
+	FieldText,
+	FieldCompleted,
 }
 
 // ValidColumn reports if the column name is valid (part of the table columns).
@@ -30,10 +37,29 @@ func ValidColumn(column string) bool {
 	return false
 }
 
+var (
+	// TextValidator is a validator for the "text" field. It is called by the builders before save.
+	TextValidator func(string) error
+	// DefaultCompleted holds the default value on creation for the "completed" field.
+	DefaultCompleted bool
+	// DefaultID holds the default value on creation for the "id" field.
+	DefaultID func() uuid.UUID
+)
+
 // OrderOption defines the ordering options for the Task queries.
 type OrderOption func(*sql.Selector)
 
 // ByID orders the results by the id field.
 func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
+}
+
+// ByText orders the results by the text field.
+func ByText(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldText, opts...).ToFunc()
+}
+
+// ByCompleted orders the results by the completed field.
+func ByCompleted(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCompleted, opts...).ToFunc()
 }

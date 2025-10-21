@@ -5,10 +5,12 @@ package postgresql
 import (
 	"ToDoList/internal/adapters/secondary/postgresql/task"
 	"context"
+	"errors"
 	"fmt"
 
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
+	"github.com/google/uuid"
 )
 
 // TaskCreate is the builder for creating a Task entity.
@@ -18,6 +20,40 @@ type TaskCreate struct {
 	hooks    []Hook
 }
 
+// SetText sets the "text" field.
+func (_c *TaskCreate) SetText(v string) *TaskCreate {
+	_c.mutation.SetText(v)
+	return _c
+}
+
+// SetCompleted sets the "completed" field.
+func (_c *TaskCreate) SetCompleted(v bool) *TaskCreate {
+	_c.mutation.SetCompleted(v)
+	return _c
+}
+
+// SetNillableCompleted sets the "completed" field if the given value is not nil.
+func (_c *TaskCreate) SetNillableCompleted(v *bool) *TaskCreate {
+	if v != nil {
+		_c.SetCompleted(*v)
+	}
+	return _c
+}
+
+// SetID sets the "id" field.
+func (_c *TaskCreate) SetID(v uuid.UUID) *TaskCreate {
+	_c.mutation.SetID(v)
+	return _c
+}
+
+// SetNillableID sets the "id" field if the given value is not nil.
+func (_c *TaskCreate) SetNillableID(v *uuid.UUID) *TaskCreate {
+	if v != nil {
+		_c.SetID(*v)
+	}
+	return _c
+}
+
 // Mutation returns the TaskMutation object of the builder.
 func (_c *TaskCreate) Mutation() *TaskMutation {
 	return _c.mutation
@@ -25,6 +61,7 @@ func (_c *TaskCreate) Mutation() *TaskMutation {
 
 // Save creates the Task in the database.
 func (_c *TaskCreate) Save(ctx context.Context) (*Task, error) {
+	_c.defaults()
 	return withHooks(ctx, _c.sqlSave, _c.mutation, _c.hooks)
 }
 
@@ -50,8 +87,31 @@ func (_c *TaskCreate) ExecX(ctx context.Context) {
 	}
 }
 
+// defaults sets the default values of the builder before save.
+func (_c *TaskCreate) defaults() {
+	if _, ok := _c.mutation.Completed(); !ok {
+		v := task.DefaultCompleted
+		_c.mutation.SetCompleted(v)
+	}
+	if _, ok := _c.mutation.ID(); !ok {
+		v := task.DefaultID()
+		_c.mutation.SetID(v)
+	}
+}
+
 // check runs all checks and user-defined validators on the builder.
 func (_c *TaskCreate) check() error {
+	if _, ok := _c.mutation.Text(); !ok {
+		return &ValidationError{Name: "text", err: errors.New(`postgresql: missing required field "Task.text"`)}
+	}
+	if v, ok := _c.mutation.Text(); ok {
+		if err := task.TextValidator(v); err != nil {
+			return &ValidationError{Name: "text", err: fmt.Errorf(`postgresql: validator failed for field "Task.text": %w`, err)}
+		}
+	}
+	if _, ok := _c.mutation.Completed(); !ok {
+		return &ValidationError{Name: "completed", err: errors.New(`postgresql: missing required field "Task.completed"`)}
+	}
 	return nil
 }
 
@@ -66,8 +126,13 @@ func (_c *TaskCreate) sqlSave(ctx context.Context) (*Task, error) {
 		}
 		return nil, err
 	}
-	id := _spec.ID.Value.(int64)
-	_node.ID = int(id)
+	if _spec.ID.Value != nil {
+		if id, ok := _spec.ID.Value.(*uuid.UUID); ok {
+			_node.ID = *id
+		} else if err := _node.ID.Scan(_spec.ID.Value); err != nil {
+			return nil, err
+		}
+	}
 	_c.mutation.id = &_node.ID
 	_c.mutation.done = true
 	return _node, nil
@@ -76,8 +141,20 @@ func (_c *TaskCreate) sqlSave(ctx context.Context) (*Task, error) {
 func (_c *TaskCreate) createSpec() (*Task, *sqlgraph.CreateSpec) {
 	var (
 		_node = &Task{config: _c.config}
-		_spec = sqlgraph.NewCreateSpec(task.Table, sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt))
+		_spec = sqlgraph.NewCreateSpec(task.Table, sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID))
 	)
+	if id, ok := _c.mutation.ID(); ok {
+		_node.ID = id
+		_spec.ID.Value = &id
+	}
+	if value, ok := _c.mutation.Text(); ok {
+		_spec.SetField(task.FieldText, field.TypeString, value)
+		_node.Text = value
+	}
+	if value, ok := _c.mutation.Completed(); ok {
+		_spec.SetField(task.FieldCompleted, field.TypeBool, value)
+		_node.Completed = value
+	}
 	return _node, _spec
 }
 
@@ -99,6 +176,7 @@ func (_c *TaskCreateBulk) Save(ctx context.Context) ([]*Task, error) {
 	for i := range _c.builders {
 		func(i int, root context.Context) {
 			builder := _c.builders[i]
+			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*TaskMutation)
 				if !ok {
@@ -125,10 +203,6 @@ func (_c *TaskCreateBulk) Save(ctx context.Context) ([]*Task, error) {
 					return nil, err
 				}
 				mutation.id = &nodes[i].ID
-				if specs[i].ID.Value != nil {
-					id := specs[i].ID.Value.(int64)
-					nodes[i].ID = int(id)
-				}
 				mutation.done = true
 				return nodes[i], nil
 			})

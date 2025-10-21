@@ -10,7 +10,9 @@ import (
 var (
 	// TasksColumns holds the columns for the "tasks" table.
 	TasksColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "id", Type: field.TypeUUID, Unique: true},
+		{Name: "text", Type: field.TypeString, Size: 2147483647},
+		{Name: "completed", Type: field.TypeBool, Default: false},
 	}
 	// TasksTable holds the schema information for the "tasks" table.
 	TasksTable = &schema.Table{

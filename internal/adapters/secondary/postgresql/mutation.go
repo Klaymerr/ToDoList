@@ -4,6 +4,7 @@ package postgresql
 
 import (
 	"ToDoList/internal/adapters/secondary/postgresql/predicate"
+	"ToDoList/internal/adapters/secondary/postgresql/task"
 	"context"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 const (
@@ -30,7 +32,9 @@ type TaskMutation struct {
 	config
 	op            Op
 	typ           string
-	id            *int
+	id            *uuid.UUID
+	text          *string
+	completed     *bool
 	clearedFields map[string]struct{}
 	done          bool
 	oldValue      func(context.Context) (*Task, error)
@@ -57,7 +61,7 @@ func newTaskMutation(c config, op Op, opts ...taskOption) *TaskMutation {
 }
 
 // withTaskID sets the ID field of the mutation.
-func withTaskID(id int) taskOption {
+func withTaskID(id uuid.UUID) taskOption {
 	return func(m *TaskMutation) {
 		var (
 			err   error
@@ -107,9 +111,15 @@ func (m TaskMutation) Tx() (*Tx, error) {
 	return tx, nil
 }
 
+// SetID sets the value of the id field. Note that this
+// operation is only accepted on creation of Task entities.
+func (m *TaskMutation) SetID(id uuid.UUID) {
+	m.id = &id
+}
+
 // ID returns the ID value in the mutation. Note that the ID is only available
 // if it was provided to the builder or after it was returned from the database.
-func (m *TaskMutation) ID() (id int, exists bool) {
+func (m *TaskMutation) ID() (id uuid.UUID, exists bool) {
 	if m.id == nil {
 		return
 	}
@@ -120,12 +130,12 @@ func (m *TaskMutation) ID() (id int, exists bool) {
 // That means, if the mutation is applied within a transaction with an isolation level such
 // as sql.LevelSerializable, the returned ids match the ids of the rows that will be updated
 // or updated by the mutation.
-func (m *TaskMutation) IDs(ctx context.Context) ([]int, error) {
+func (m *TaskMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	switch {
 	case m.op.Is(OpUpdateOne | OpDeleteOne):
 		id, exists := m.ID()
 		if exists {
-			return []int{id}, nil
+			return []uuid.UUID{id}, nil
 		}
 		fallthrough
 	case m.op.Is(OpUpdate | OpDelete):
@@ -133,6 +143,78 @@ func (m *TaskMutation) IDs(ctx context.Context) ([]int, error) {
 	default:
 		return nil, fmt.Errorf("IDs is not allowed on %s operations", m.op)
 	}
+}
+
+// SetText sets the "text" field.
+func (m *TaskMutation) SetText(s string) {
+	m.text = &s
+}
+
+// Text returns the value of the "text" field in the mutation.
+func (m *TaskMutation) Text() (r string, exists bool) {
+	v := m.text
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldText returns the old "text" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldText(ctx context.Context) (v string, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldText is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldText requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldText: %w", err)
+	}
+	return oldValue.Text, nil
+}
+
+// ResetText resets all changes to the "text" field.
+func (m *TaskMutation) ResetText() {
+	m.text = nil
+}
+
+// SetCompleted sets the "completed" field.
+func (m *TaskMutation) SetCompleted(b bool) {
+	m.completed = &b
+}
+
+// Completed returns the value of the "completed" field in the mutation.
+func (m *TaskMutation) Completed() (r bool, exists bool) {
+	v := m.completed
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCompleted returns the old "completed" field's value of the Task entity.
+// If the Task object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *TaskMutation) OldCompleted(ctx context.Context) (v bool, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCompleted is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCompleted requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCompleted: %w", err)
+	}
+	return oldValue.Completed, nil
+}
+
+// ResetCompleted resets all changes to the "completed" field.
+func (m *TaskMutation) ResetCompleted() {
+	m.completed = nil
 }
 
 // Where appends a list predicates to the TaskMutation builder.
@@ -169,7 +251,13 @@ func (m *TaskMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *TaskMutation) Fields() []string {
-	fields := make([]string, 0, 0)
+	fields := make([]string, 0, 2)
+	if m.text != nil {
+		fields = append(fields, task.FieldText)
+	}
+	if m.completed != nil {
+		fields = append(fields, task.FieldCompleted)
+	}
 	return fields
 }
 
@@ -177,6 +265,12 @@ func (m *TaskMutation) Fields() []string {
 // return value indicates that this field was not set, or was not defined in the
 // schema.
 func (m *TaskMutation) Field(name string) (ent.Value, bool) {
+	switch name {
+	case task.FieldText:
+		return m.Text()
+	case task.FieldCompleted:
+		return m.Completed()
+	}
 	return nil, false
 }
 
@@ -184,6 +278,12 @@ func (m *TaskMutation) Field(name string) (ent.Value, bool) {
 // returned if the mutation operation is not UpdateOne, or the query to the
 // database failed.
 func (m *TaskMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
+	switch name {
+	case task.FieldText:
+		return m.OldText(ctx)
+	case task.FieldCompleted:
+		return m.OldCompleted(ctx)
+	}
 	return nil, fmt.Errorf("unknown Task field %s", name)
 }
 
@@ -192,6 +292,20 @@ func (m *TaskMutation) OldField(ctx context.Context, name string) (ent.Value, er
 // type.
 func (m *TaskMutation) SetField(name string, value ent.Value) error {
 	switch name {
+	case task.FieldText:
+		v, ok := value.(string)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetText(v)
+		return nil
+	case task.FieldCompleted:
+		v, ok := value.(bool)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCompleted(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Task field %s", name)
 }
@@ -213,6 +327,8 @@ func (m *TaskMutation) AddedField(name string) (ent.Value, bool) {
 // the field is not defined in the schema, or if the type mismatched the field
 // type.
 func (m *TaskMutation) AddField(name string, value ent.Value) error {
+	switch name {
+	}
 	return fmt.Errorf("unknown Task numeric field %s", name)
 }
 
@@ -238,6 +354,14 @@ func (m *TaskMutation) ClearField(name string) error {
 // ResetField resets all changes in the mutation for the field with the given name.
 // It returns an error if the field is not defined in the schema.
 func (m *TaskMutation) ResetField(name string) error {
+	switch name {
+	case task.FieldText:
+		m.ResetText()
+		return nil
+	case task.FieldCompleted:
+		m.ResetCompleted()
+		return nil
+	}
 	return fmt.Errorf("unknown Task field %s", name)
 }
 

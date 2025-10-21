@@ -27,6 +27,34 @@ func (_u *TaskUpdate) Where(ps ...predicate.Task) *TaskUpdate {
 	return _u
 }
 
+// SetText sets the "text" field.
+func (_u *TaskUpdate) SetText(v string) *TaskUpdate {
+	_u.mutation.SetText(v)
+	return _u
+}
+
+// SetNillableText sets the "text" field if the given value is not nil.
+func (_u *TaskUpdate) SetNillableText(v *string) *TaskUpdate {
+	if v != nil {
+		_u.SetText(*v)
+	}
+	return _u
+}
+
+// SetCompleted sets the "completed" field.
+func (_u *TaskUpdate) SetCompleted(v bool) *TaskUpdate {
+	_u.mutation.SetCompleted(v)
+	return _u
+}
+
+// SetNillableCompleted sets the "completed" field if the given value is not nil.
+func (_u *TaskUpdate) SetNillableCompleted(v *bool) *TaskUpdate {
+	if v != nil {
+		_u.SetCompleted(*v)
+	}
+	return _u
+}
+
 // Mutation returns the TaskMutation object of the builder.
 func (_u *TaskUpdate) Mutation() *TaskMutation {
 	return _u.mutation
@@ -59,14 +87,33 @@ func (_u *TaskUpdate) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *TaskUpdate) check() error {
+	if v, ok := _u.mutation.Text(); ok {
+		if err := task.TextValidator(v); err != nil {
+			return &ValidationError{Name: "text", err: fmt.Errorf(`postgresql: validator failed for field "Task.text": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *TaskUpdate) sqlSave(ctx context.Context) (_node int, err error) {
-	_spec := sqlgraph.NewUpdateSpec(task.Table, task.Columns, sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt))
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
+	_spec := sqlgraph.NewUpdateSpec(task.Table, task.Columns, sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID))
 	if ps := _u.mutation.predicates; len(ps) > 0 {
 		_spec.Predicate = func(selector *sql.Selector) {
 			for i := range ps {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := _u.mutation.Text(); ok {
+		_spec.SetField(task.FieldText, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Completed(); ok {
+		_spec.SetField(task.FieldCompleted, field.TypeBool, value)
 	}
 	if _node, err = sqlgraph.UpdateNodes(ctx, _u.driver, _spec); err != nil {
 		if _, ok := err.(*sqlgraph.NotFoundError); ok {
@@ -86,6 +133,34 @@ type TaskUpdateOne struct {
 	fields   []string
 	hooks    []Hook
 	mutation *TaskMutation
+}
+
+// SetText sets the "text" field.
+func (_u *TaskUpdateOne) SetText(v string) *TaskUpdateOne {
+	_u.mutation.SetText(v)
+	return _u
+}
+
+// SetNillableText sets the "text" field if the given value is not nil.
+func (_u *TaskUpdateOne) SetNillableText(v *string) *TaskUpdateOne {
+	if v != nil {
+		_u.SetText(*v)
+	}
+	return _u
+}
+
+// SetCompleted sets the "completed" field.
+func (_u *TaskUpdateOne) SetCompleted(v bool) *TaskUpdateOne {
+	_u.mutation.SetCompleted(v)
+	return _u
+}
+
+// SetNillableCompleted sets the "completed" field if the given value is not nil.
+func (_u *TaskUpdateOne) SetNillableCompleted(v *bool) *TaskUpdateOne {
+	if v != nil {
+		_u.SetCompleted(*v)
+	}
+	return _u
 }
 
 // Mutation returns the TaskMutation object of the builder.
@@ -133,8 +208,21 @@ func (_u *TaskUpdateOne) ExecX(ctx context.Context) {
 	}
 }
 
+// check runs all checks and user-defined validators on the builder.
+func (_u *TaskUpdateOne) check() error {
+	if v, ok := _u.mutation.Text(); ok {
+		if err := task.TextValidator(v); err != nil {
+			return &ValidationError{Name: "text", err: fmt.Errorf(`postgresql: validator failed for field "Task.text": %w`, err)}
+		}
+	}
+	return nil
+}
+
 func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
-	_spec := sqlgraph.NewUpdateSpec(task.Table, task.Columns, sqlgraph.NewFieldSpec(task.FieldID, field.TypeInt))
+	if err := _u.check(); err != nil {
+		return _node, err
+	}
+	_spec := sqlgraph.NewUpdateSpec(task.Table, task.Columns, sqlgraph.NewFieldSpec(task.FieldID, field.TypeUUID))
 	id, ok := _u.mutation.ID()
 	if !ok {
 		return nil, &ValidationError{Name: "id", err: errors.New(`postgresql: missing "Task.id" for update`)}
@@ -158,6 +246,12 @@ func (_u *TaskUpdateOne) sqlSave(ctx context.Context) (_node *Task, err error) {
 				ps[i](selector)
 			}
 		}
+	}
+	if value, ok := _u.mutation.Text(); ok {
+		_spec.SetField(task.FieldText, field.TypeString, value)
+	}
+	if value, ok := _u.mutation.Completed(); ok {
+		_spec.SetField(task.FieldCompleted, field.TypeBool, value)
 	}
 	_node = &Task{config: _u.config}
 	_spec.Assign = _node.assignValues

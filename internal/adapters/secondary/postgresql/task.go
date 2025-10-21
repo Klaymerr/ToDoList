@@ -9,13 +9,18 @@ import (
 
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 // Task is the model entity for the Task schema.
 type Task struct {
-	config
+	config `json:"-"`
 	// ID of the ent.
-	ID           int `json:"id,omitempty"`
+	ID uuid.UUID `json:"id,omitempty"`
+	// Text holds the value of the "text" field.
+	Text string `json:"text,omitempty"`
+	// Completed holds the value of the "completed" field.
+	Completed    bool `json:"completed,omitempty"`
 	selectValues sql.SelectValues
 }
 
@@ -24,8 +29,12 @@ func (*Task) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
+		case task.FieldCompleted:
+			values[i] = new(sql.NullBool)
+		case task.FieldText:
+			values[i] = new(sql.NullString)
 		case task.FieldID:
-			values[i] = new(sql.NullInt64)
+			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
 		}
@@ -42,11 +51,23 @@ func (_m *Task) assignValues(columns []string, values []any) error {
 	for i := range columns {
 		switch columns[i] {
 		case task.FieldID:
-			value, ok := values[i].(*sql.NullInt64)
-			if !ok {
-				return fmt.Errorf("unexpected type %T for field id", value)
+			if value, ok := values[i].(*uuid.UUID); !ok {
+				return fmt.Errorf("unexpected type %T for field id", values[i])
+			} else if value != nil {
+				_m.ID = *value
 			}
-			_m.ID = int(value.Int64)
+		case task.FieldText:
+			if value, ok := values[i].(*sql.NullString); !ok {
+				return fmt.Errorf("unexpected type %T for field text", values[i])
+			} else if value.Valid {
+				_m.Text = value.String
+			}
+		case task.FieldCompleted:
+			if value, ok := values[i].(*sql.NullBool); !ok {
+				return fmt.Errorf("unexpected type %T for field completed", values[i])
+			} else if value.Valid {
+				_m.Completed = value.Bool
+			}
 		default:
 			_m.selectValues.Set(columns[i], values[i])
 		}
@@ -82,7 +103,12 @@ func (_m *Task) Unwrap() *Task {
 func (_m *Task) String() string {
 	var builder strings.Builder
 	builder.WriteString("Task(")
-	builder.WriteString(fmt.Sprintf("id=%v", _m.ID))
+	builder.WriteString(fmt.Sprintf("id=%v, ", _m.ID))
+	builder.WriteString("text=")
+	builder.WriteString(_m.Text)
+	builder.WriteString(", ")
+	builder.WriteString("completed=")
+	builder.WriteString(fmt.Sprintf("%v", _m.Completed))
 	builder.WriteByte(')')
 	return builder.String()
 }

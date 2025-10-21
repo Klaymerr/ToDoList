@@ -6,51 +6,137 @@ import (
 	"ToDoList/internal/adapters/secondary/postgresql/predicate"
 
 	"entgo.io/ent/dialect/sql"
+	"github.com/google/uuid"
 )
 
 // ID filters vertices based on their ID field.
-func ID(id int) predicate.Task {
+func ID(id uuid.UUID) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldID, id))
 }
 
 // IDEQ applies the EQ predicate on the ID field.
-func IDEQ(id int) predicate.Task {
+func IDEQ(id uuid.UUID) predicate.Task {
 	return predicate.Task(sql.FieldEQ(FieldID, id))
 }
 
 // IDNEQ applies the NEQ predicate on the ID field.
-func IDNEQ(id int) predicate.Task {
+func IDNEQ(id uuid.UUID) predicate.Task {
 	return predicate.Task(sql.FieldNEQ(FieldID, id))
 }
 
 // IDIn applies the In predicate on the ID field.
-func IDIn(ids ...int) predicate.Task {
+func IDIn(ids ...uuid.UUID) predicate.Task {
 	return predicate.Task(sql.FieldIn(FieldID, ids...))
 }
 
 // IDNotIn applies the NotIn predicate on the ID field.
-func IDNotIn(ids ...int) predicate.Task {
+func IDNotIn(ids ...uuid.UUID) predicate.Task {
 	return predicate.Task(sql.FieldNotIn(FieldID, ids...))
 }
 
 // IDGT applies the GT predicate on the ID field.
-func IDGT(id int) predicate.Task {
+func IDGT(id uuid.UUID) predicate.Task {
 	return predicate.Task(sql.FieldGT(FieldID, id))
 }
 
 // IDGTE applies the GTE predicate on the ID field.
-func IDGTE(id int) predicate.Task {
+func IDGTE(id uuid.UUID) predicate.Task {
 	return predicate.Task(sql.FieldGTE(FieldID, id))
 }
 
 // IDLT applies the LT predicate on the ID field.
-func IDLT(id int) predicate.Task {
+func IDLT(id uuid.UUID) predicate.Task {
 	return predicate.Task(sql.FieldLT(FieldID, id))
 }
 
 // IDLTE applies the LTE predicate on the ID field.
-func IDLTE(id int) predicate.Task {
+func IDLTE(id uuid.UUID) predicate.Task {
 	return predicate.Task(sql.FieldLTE(FieldID, id))
+}
+
+// Text applies equality check predicate on the "text" field. It's identical to TextEQ.
+func Text(v string) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldText, v))
+}
+
+// Completed applies equality check predicate on the "completed" field. It's identical to CompletedEQ.
+func Completed(v bool) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldCompleted, v))
+}
+
+// TextEQ applies the EQ predicate on the "text" field.
+func TextEQ(v string) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldText, v))
+}
+
+// TextNEQ applies the NEQ predicate on the "text" field.
+func TextNEQ(v string) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldText, v))
+}
+
+// TextIn applies the In predicate on the "text" field.
+func TextIn(vs ...string) predicate.Task {
+	return predicate.Task(sql.FieldIn(FieldText, vs...))
+}
+
+// TextNotIn applies the NotIn predicate on the "text" field.
+func TextNotIn(vs ...string) predicate.Task {
+	return predicate.Task(sql.FieldNotIn(FieldText, vs...))
+}
+
+// TextGT applies the GT predicate on the "text" field.
+func TextGT(v string) predicate.Task {
+	return predicate.Task(sql.FieldGT(FieldText, v))
+}
+
+// TextGTE applies the GTE predicate on the "text" field.
+func TextGTE(v string) predicate.Task {
+	return predicate.Task(sql.FieldGTE(FieldText, v))
+}
+
+// TextLT applies the LT predicate on the "text" field.
+func TextLT(v string) predicate.Task {
+	return predicate.Task(sql.FieldLT(FieldText, v))
+}
+
+// TextLTE applies the LTE predicate on the "text" field.
+func TextLTE(v string) predicate.Task {
+	return predicate.Task(sql.FieldLTE(FieldText, v))
+}
+
+// TextContains applies the Contains predicate on the "text" field.
+func TextContains(v string) predicate.Task {
+	return predicate.Task(sql.FieldContains(FieldText, v))
+}
+
+// TextHasPrefix applies the HasPrefix predicate on the "text" field.
+func TextHasPrefix(v string) predicate.Task {
+	return predicate.Task(sql.FieldHasPrefix(FieldText, v))
+}
+
+// TextHasSuffix applies the HasSuffix predicate on the "text" field.
+func TextHasSuffix(v string) predicate.Task {
+	return predicate.Task(sql.FieldHasSuffix(FieldText, v))
+}
+
+// TextEqualFold applies the EqualFold predicate on the "text" field.
+func TextEqualFold(v string) predicate.Task {
+	return predicate.Task(sql.FieldEqualFold(FieldText, v))
+}
+
+// TextContainsFold applies the ContainsFold predicate on the "text" field.
+func TextContainsFold(v string) predicate.Task {
+	return predicate.Task(sql.FieldContainsFold(FieldText, v))
+}
+
+// CompletedEQ applies the EQ predicate on the "completed" field.
+func CompletedEQ(v bool) predicate.Task {
+	return predicate.Task(sql.FieldEQ(FieldCompleted, v))
+}
+
+// CompletedNEQ applies the NEQ predicate on the "completed" field.
+func CompletedNEQ(v bool) predicate.Task {
+	return predicate.Task(sql.FieldNEQ(FieldCompleted, v))
 }
 
 // And groups predicates with the AND operator between them.
