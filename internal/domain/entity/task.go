@@ -39,3 +39,11 @@ func (t *Task) Text() valueobject.Text {
 func (t *Task) Completed() bool {
 	return t.completed
 }
+
+func RestoreTask(id uuid.UUID, t valueobject.Text, c bool) (*Task, error) {
+	return &Task{
+		id:        id,
+		text:      t,
+		completed: c,
+	}, nil
+}
