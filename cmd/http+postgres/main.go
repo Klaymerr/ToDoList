@@ -28,13 +28,11 @@ func GetPostgreEnv() string {
 }
 
 func main() {
-	//taskRepository := local_memory.NewLocalMap()
 	taskRepository, err := postgresql.NewPostgresqlRepository(GetPostgreEnv())
 	if err != nil {
 		panic(err)
 	}
 	taskService := service.NewTaskService(taskRepository)
-	//primaryAdapter := console.NewConsole(taskService)
 	primaryAdapter := http_adapter.NewRouter(taskService)
 	primaryAdapter.Start()
 }
