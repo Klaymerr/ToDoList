@@ -14,7 +14,7 @@ func mapEntTaskToDomain(task *ent.Task) (entity.Task, error) {
 		return entity.Task{}, err
 	}
 
-	valtask, err := entity.RestoreTask(
+	valtask, err := entity.NewTask(
 		task.ID,
 		*text,
 		task.Completed)

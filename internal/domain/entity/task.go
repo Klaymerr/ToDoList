@@ -12,12 +12,12 @@ type Task struct {
 	completed bool
 }
 
-func NewTask(text valueobject.Text) *Task {
+func NewTask(id uuid.UUID, t valueobject.Text, c bool) (*Task, error) {
 	return &Task{
-		id:        uuid.New(),
-		text:      text,
-		completed: false,
-	}
+		id:        id,
+		text:      t,
+		completed: c,
+	}, nil
 }
 
 func (t *Task) Complete() {
@@ -38,12 +38,4 @@ func (t *Task) Text() valueobject.Text {
 
 func (t *Task) Completed() bool {
 	return t.completed
-}
-
-func RestoreTask(id uuid.UUID, t valueobject.Text, c bool) (*Task, error) {
-	return &Task{
-		id:        id,
-		text:      t,
-		completed: c,
-	}, nil
 }

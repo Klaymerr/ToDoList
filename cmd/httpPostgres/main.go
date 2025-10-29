@@ -1,7 +1,7 @@
 package main
 
 import (
-	"ToDoList/internal/adapters/primary/http_adapter"
+	"ToDoList/internal/adapters/primary/api"
 	"ToDoList/internal/adapters/secondary/postgresql"
 	"ToDoList/internal/domain/service"
 	"fmt"
@@ -33,6 +33,6 @@ func main() {
 		panic(err)
 	}
 	taskService := service.NewTaskService(taskRepository)
-	primaryAdapter := http_adapter.NewRouter(taskService)
+	primaryAdapter := api.NewRouter(taskService)
 	primaryAdapter.Start()
 }

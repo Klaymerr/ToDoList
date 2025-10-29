@@ -18,9 +18,11 @@ func NewTaskService(taskRepo secondary.TaskRepository) *TaskService {
 }
 
 func (ts *TaskService) CreateTask(text valueobject.Text) error {
-	task := entity.NewTask(text)
-	err := ts.TaskRepo.CreateTask(*task)
+	task, err := entity.NewTask(uuid.New(), text, false)
 	if err != nil {
+		return err
+	}
+	if err := ts.TaskRepo.CreateTask(*task); err != nil {
 		return err
 	}
 	return nil

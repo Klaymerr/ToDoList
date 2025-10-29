@@ -1,4 +1,4 @@
-package http_adapter
+package api
 
 import (
 	"ToDoList/internal/ports/primary"

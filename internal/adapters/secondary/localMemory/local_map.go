@@ -1,4 +1,4 @@
-package local_memory
+package localMemory
 
 import (
 	"ToDoList/internal/domain/entity"
