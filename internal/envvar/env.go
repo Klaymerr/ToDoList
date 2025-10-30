@@ -1,9 +1,6 @@
-package main
+package envvar
 
 import (
-	"ToDoList/internal/adapters/primary/api"
-	"ToDoList/internal/adapters/secondary/postgresql"
-	"ToDoList/internal/domain/service"
 	"fmt"
 	"github.com/joho/godotenv"
 	"log"
@@ -25,14 +22,4 @@ func GetPostgreEnv() string {
 
 	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		dbHost, dbPort, dbUser, dbPassword, dbName, dbSslMode)
-}
-
-func main() {
-	taskRepository, err := postgresql.NewPostgresqlRepository(GetPostgreEnv())
-	if err != nil {
-		panic(err)
-	}
-	taskService := service.NewTaskService(taskRepository)
-	primaryAdapter := api.NewRouter(taskService)
-	primaryAdapter.Start()
 }
