@@ -2,16 +2,12 @@ package app
 
 import (
 	"ToDoList/internal/adapters/primary/api"
-	"ToDoList/internal/adapters/secondary/postgresql"
-	"ToDoList/internal/domain/service"
-	"ToDoList/internal/envvar"
 	"fmt"
 )
 
 type App struct {
-	endpoint   *api.Router
-	service    *service.TaskService
-	repository *postgresql.PostgresqlRepository
+	endpoint *api.Router
+	sp       ServiceProvider
 }
 
 func NewApp() *App {
@@ -34,8 +30,7 @@ func (a *App) Run() error {
 
 func (a *App) initDeps() error {
 	inits := []func() error{
-		a.initRepository,
-		a.initService,
+		a.initServiceProvider,
 		a.initEndpoint,
 	}
 
@@ -48,21 +43,12 @@ func (a *App) initDeps() error {
 	return nil
 }
 
-func (a *App) initRepository() error {
-	var err error
-	a.repository, err = postgresql.NewPostgresqlRepository(envvar.GetPostgreEnv())
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (a *App) initService() error {
-	a.service = service.NewTaskService(a.repository)
+func (a *App) initServiceProvider() error {
+	a.sp = *newServiceProvider()
 	return nil
 }
 
 func (a *App) initEndpoint() error {
-	a.endpoint = api.NewRouter(a.service)
+	a.endpoint = api.NewRouter(a.sp.TaskService())
 	return nil
 }

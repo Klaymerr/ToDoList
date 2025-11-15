@@ -1,8 +1,14 @@
 package main
 
-import "ToDoList/internal/app"
+import (
+	"ToDoList/internal/app"
+	"log"
+)
 
 func main() {
-	app := app.NewApp()
-	app.Run()
+	a := app.NewApp()
+	err := a.Run()
+	if err != nil {
+		log.Fatal(err)
+	}
 }
